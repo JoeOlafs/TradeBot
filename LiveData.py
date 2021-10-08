@@ -9,10 +9,13 @@ async def main():
      client = await AsyncClient.create(keys.api_key, keys.secret_key)
      bsm = BinanceSocketManager(client)
      trade_socket = bsm.trade_socket('ETHUSDC')
+     engine = sqlalchemy.create_engine('sqlite:///ETHUSDCstream.db')
      async with trade_socket as tscm:
           while True:
                msg = await tscm.recv()
-               print(createframe(msg))
+               frame = createframe(msg)
+               frame.to_sql('ETHUSDC', engine, if_exists='append', index=False)
+               print(frame)
      await client.close_connection()
 
 def createframe(msg):
